@@ -6,7 +6,7 @@ Este proyecto es un **sistema de ventas** desarrollado con Django, que incluye f
 
 ## Requisitos
 
-Antes de ejecutar el proyecto, asegúrate de tener instalado:
+Antes de ejecutar el proyecto:
 
 - Python
 - Django
