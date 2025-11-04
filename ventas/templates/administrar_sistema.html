@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% load static %}
+{% block content %}
+
+<div class="container text-center mt-5">
+    <img src="{% static 'index/img/logo.png' %}" alt="Logo" width="100" class="mb-4">
+    <h1>Panel de Administración</h1>
+    <div class="mt-4">
+        <a href="{% url 'administrar_usuarios' %}" class="btn btn-primary btn-lg mx-2">Administrar Usuarios</a>
+        <a href="{% url 'historial_ventas' %}" class="btn btn-secondary btn-lg mx-2">Historial de Ventas</a>
+        <a href="{% url 'administrar_inventario' %}" class="btn btn-success btn-lg mx-2">Administrar Inventario</a>
+    </div>
+    <div class="mt-4">
+        <a href="{% url 'lobby' %}" class="btn btn-danger btn-lg">Regresar</a>
+    </div>
+</div>
+
+{% endblock %}

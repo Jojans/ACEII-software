@@ -1,0 +1,185 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container mt-5">
+    <h1 class="text-center">Administrar Inventario</h1>
+
+    <!-- Mostrar mensajes de éxito y error -->
+    {% if messages %}
+        <div class="alert alert-info">
+            {% for message in messages %}
+                <p>{{ message }}</p>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>Código</th>
+                <th>Código de Barras</th>
+                <th>Nombre</th>
+                <th>Precio Interno</th>
+                <th>Precio Público</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for producto in productos %}
+            <tr>
+                <td>{{ producto.codigo }}</td>
+                <td>{{ producto.codigo_barras }}</td>
+                <td>{{ producto.nombre }}</td>
+                <td>${{ producto.precio_interno }}</td>
+                <td>${{ producto.precio_publico }}</td>
+                <td>
+                    <form method="POST" style="display:inline;">
+                        {% csrf_token %}
+                        <input type="hidden" name="producto_id" value="{{ producto.id }}">
+                        <button type="button" class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#confirmDeleteModal" 
+                            onclick="setDeleteProduct('{{ producto.id }}')">
+                            Eliminar
+                        </button>
+                    </form>
+                    <form method="POST" style="display:inline;">
+                        {% csrf_token %}
+                        <input type="hidden" name="producto_id" value="{{ producto.id }}">
+                        <button type="button" class="btn btn-info btn-sm" data-bs-toggle="modal" data-bs-target="#editPriceModal" 
+                        onclick="setEditPrice('{{ producto.id }}', '{{ producto.precio_interno }}', '{{ producto.precio_publico }}')">
+                        Modificar Precios
+                    </button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <!-- Botón para abrir el modal de agregar producto -->
+<div class="text-center mt-4">
+    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addProductModal">
+        Agregar Producto
+    </button>
+</div>
+
+<!-- Modal para agregar un producto -->
+<div class="modal fade" id="addProductModal" tabindex="-1" aria-labelledby="addProductModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addProductModalLabel">Agregar Producto</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form method="POST">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="codigo" class="form-label">Código</label>
+                        <input type="text" class="form-control" id="codigo" name="codigo" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="codigo_barras" class="form-label">Código de Barras</label>
+                        <input type="text" class="form-control" id="codigo_barras" name="codigo_barras" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="nombre" class="form-label">Nombre del Producto</label>
+                        <input type="text" class="form-control" id="nombre" name="nombre" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="precio_interno" class="form-label">Precio Interno</label>
+                        <input type="number" step="0.01" class="form-control" id="precio_interno" name="precio_interno" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="precio_publico" class="form-label">Precio al Público</label>
+                        <input type="number" step="0.01" class="form-control" id="precio_publico" name="precio_publico" required>
+                    </div>
+                    <button type="submit" name="add_product" class="btn btn-primary">Agregar Producto</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de confirmación -->
+<div class="modal fade" id="confirmDeleteModal" tabindex="-1" aria-labelledby="confirmDeleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="confirmDeleteModalLabel">Confirmar Eliminación</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                ¿Estás seguro de que deseas eliminar este producto?
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <form method="POST" id="deleteProductForm">
+                    {% csrf_token %}
+                    <input type="hidden" name="producto_id" id="deleteProductId">
+                    <button type="submit" name="eliminar_producto" class="btn btn-danger">Eliminar</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal para modificar precios -->
+<div class="modal fade" id="editPriceModal" tabindex="-1" aria-labelledby="editPriceModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editPriceModalLabel">Modificar Precios</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form method="POST" id="editPriceForm">
+                    {% csrf_token %}
+                    <input type="hidden" name="producto_id" id="editPriceProductId">
+                    <div class="mb-3">
+                        <label for="nuevo_precio_interno" class="form-label">Precio Interno</label>
+                        <input type="number" step="0.01" class="form-control" id="nuevoPrecioInterno" name="nuevo_precio_interno" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="nuevo_precio_publico" class="form-label">Precio Público</label>
+                        <input type="number" step="0.01" class="form-control" id="nuevoPrecioPublico" name="nuevo_precio_publico" required>
+                    </div>
+                    <button type="submit" name="modificar_precio" class="btn btn-primary">Guardar Cambios</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+    <!-- Botón para regresar -->
+<div class="text-end mb-3">
+    <a href="{% url 'administrar_sistema' %}" class="btn btn-danger">Regresar</a>
+</div>
+
+</div>
+
+<!-- Bootstrap JavaScript -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+    function setDeleteProduct(productId) {
+        document.getElementById('deleteProductId').value = productId;
+    }
+</script>
+
+<script>
+    // Configurar el producto para modificar cantidad
+    function setModifyProduct(productId, currentQuantity) {
+        document.getElementById('modifyProductId').value = productId;
+        document.getElementById('newQuantity').value = currentQuantity;
+    }
+</script>
+
+<script>
+    function setEditPrice(productId, precioInterno, precioPublico) {
+        document.getElementById('editPriceProductId').value = productId;
+        document.getElementById('nuevoPrecioInterno').value = precioInterno;
+        document.getElementById('nuevoPrecioPublico').value = precioPublico;
+    }
+</script>
+
+{% endblock %}

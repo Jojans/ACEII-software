@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% load custom_filters %}
+
+{% block content %}
+<div class="container mt-5">
+    <h1 class="text-center">Detalle de Venta - {{ venta.fecha|date:"d/m/Y" }}</h1>
+
+    <div class="text-end mb-3">
+        <a href="{% url 'historial_ventas' %}" class="btn btn-danger">Regresar</a>
+    </div>
+
+    <!-- Información general de la venta -->
+    <h3>Información General</h3>
+    <table class="table table-bordered">
+        <tr>
+            <th>Fecha de Venta</th>
+            <td>{{ venta.fecha|date:"d/m/Y" }}</td>
+        </tr>
+        <tr>
+            <th>Caja Inicial</th>
+            <td>{{ venta.caja_inicial }}</td>
+        </tr>
+        <tr>
+            <th>Total de Venta</th>
+            <td>{{ total_venta }}</td>
+        </tr>
+        <tr>
+            <th>Total del Día</th>
+            <td>{{ venta.total_dia }}</td>
+        </tr>
+        <!-- Agrega más campos según tu modelo de venta -->
+    </table>
+
+    <!-- Detalle de productos vendidos -->
+    <h3>Productos Vendidos</h3>
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>Producto</th>
+                <th>Cantidad</th>
+                <th>Precio</th>
+                <th>Total</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for producto, cantidad, precio in detalles_productos %}
+            <tr>
+                <td>{{ producto }}</td>
+                <td>{{ cantidad }}</td>
+                <td>{{ precio }}</td>
+                <td>{{ cantidad|multiply:precio }}</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+    <!-- Puedes agregar más detalles según sea necesario -->
+</div>
+
+{% endblock %}

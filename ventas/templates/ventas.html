@@ -1,0 +1,401 @@
+    {% extends "base.html" %}
+    {% load static %}
+    {% load widget_tweaks %}
+    {% block content %}
+
+    <html lang="es">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Interfaz de Ventas</title>
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+        <link rel="stylesheet" href="{% static 'index/css/sisven.css' %}">
+    </head>
+    <body>
+
+    <div class="container">
+        <div class="left-section">
+            <center><h3>Registrar Venta</h3></center>
+            <div class="inline-group">
+                <div class="input-group">
+                    <label for="cantidad">Cantidad</label>
+                    <input type="number" id="cantidad" name="cantidad" value="1" min="1">
+                </div>
+                <div class="input-group">
+                    <label for="codigo">Código</label>
+                    <input type="number" id="codigo" name="codigo">
+                </div>
+                <div>
+                    <button class="button-red" style="margin-left: 10px;">X</button>
+                </div>
+                <div>
+                    <button type="button" class="btn btn-success" id="addProductBtn">Agregar</button>
+                </div>
+            </div>
+            <div class="product-container">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Producto</th>
+                            <th>Precio</th>
+                            <th>Hora</th>
+                            <th>Cantidad</th>
+                            <th>Check</th>
+                        </tr>
+                    </thead>
+                    <!-- Las filas se agregarán aquí dinámicamente -->  
+                    <tbody id="productTableBody">
+                
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="right-section container-fluid">
+            <center><h3>Detalles de Caja</h3></center>
+            <div class="input-group">
+                <label for="ventas_dia">Ventas del Día</label>
+                <input type="text" id="ventas_dia" name="ventas_dia" disabled>
+            </div>
+            <div class="input-group">
+                <label for="caja_inicial">Caja Inicial del Día</label>
+                <input type="text" id="caja_inicial" name="caja_inicial" value="{{ caja_inicial }}" disabled>
+            </div>
+            <div class="input-group">
+                <label for="efectivo_en_caja">Efectivo en Caja</label>
+                <input type="text" id="efectivo_en_caja" name="efectivo_en_caja" disabled>
+            </div>
+            <center><h3>Producto Actual</h3></center>
+            <div class="input-group">
+                <label for="nombre_producto">Nombre Producto</label>
+                <input type="text" id="nombre_producto" name="nombre_producto" disabled>
+            </div>
+            <div class="input-group">
+                <label for="precio_unitario">Precio por Unidad</label>
+                <input type="number" id="precio_unitario" name="precio_unitario" disabled>
+            </div>
+            <div class="input-group">
+                <label for="total_venta">Total de Esta Venta</label>
+                <input type="text" id="total_venta" name="total_venta" disabled>
+            </div>
+        </div>
+    </div>
+    
+<div class="mt-4">
+    <a href="{% url 'lobby' %}" class="btn btn-danger btn-lg">Regresar</a>
+
+    <!-- Botón Fijar Caja Inicial -->
+    <button type="button" class="btn btn-primary btn-lg float-end" data-bs-toggle="modal" data-bs-target="#setCajaInicialModal">
+        Fijar Caja Inicial
+    </button>    
+</div>
+
+<!-- Formulario para Cerrar Caja -->
+<form method="POST" action="{% url 'cerrar_caja' %}">
+    {% csrf_token %}
+    <!-- Campo oculto para enviar los productos vendidos como JSON -->
+    <input type="hidden" name="productos_vendidos" value="{{ productos_vendidos_json }}">
+
+    <!-- Campo oculto para enviar el valor de la caja inicial -->
+    <input type="hidden" name="caja_inicial" id="caja_inicial_input" value="{{ caja_inicial }}">
+    
+    <button type="button" class="btn btn-secondary btn-lg float-end" id="cerrarCajaBtn" >Cerrar Caja</button>
+</form>
+
+<!-- Modal para fijar caja inicial -->
+    <div class="modal fade" id="setCajaInicialModal" tabindex="-1" aria-labelledby="setCajaInicialLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="setCajaInicialLabel">Fijar Caja Inicial</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form method="POST" action="">
+                    {% csrf_token %}
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label for="valor_caja_inicial" class="form-label">Valor de la Caja Inicial</label>
+                            <input type="number" class="form-control" id="valor_caja_inicial" name="valor_caja_inicial" required>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" name="set_caja_inicial" class="btn btn-primary">Guardar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de confirmación de cierre de caja -->
+    <div class="modal fade" id="confirmCerrarCajaModal" tabindex="-1" aria-labelledby="confirmCerrarCajaModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="confirmCerrarCajaModalLabel">Confirmar Cierre de Caja</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    ¿Está seguro de que desea cerrar la caja? Esta acción eliminará los productos de la venta.
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" id="cancelarCerrarCajaBtn">No</button>
+                    <button type="button" class="btn btn-danger" id="confirmCerrarCajaBtn">Sí, cerrar caja</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JavaScript -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const tableBody = document.getElementById('productTableBody');
+            const addProductBtn = document.getElementById('addProductBtn');
+            const codigoInput = document.getElementById('codigo');
+            const ventasDiaInput = document.getElementById('ventas_dia');
+            const efectivoEnCajaInput = document.getElementById('efectivo_en_caja');
+            const cajaInicialInput = document.getElementById('caja_inicial');
+            const valorCajaInicialInput = document.getElementById('valor_caja_inicial');
+            const guardarCajaInicialBtn = document.querySelector('#setCajaInicialModal button[type="submit"]');
+            const gananciasInput = document.getElementById('ganancias');
+            const deleteButton = document.querySelector('.button-red');
+
+            // Recuperar los productos guardados en localStorage
+            const savedProducts = JSON.parse(localStorage.getItem('products')) || [];
+            document.querySelector('input[name="productos_vendidos"]').value = JSON.stringify(savedProducts);
+
+            // Recuperar el valor de la caja inicial
+            const savedCajaInicial = parseFloat(localStorage.getItem('caja_inicial')) || 0;
+            cajaInicialInput.value = savedCajaInicial.toFixed(2);
+
+            guardarCajaInicialBtn.addEventListener('click', function (event) {
+                event.preventDefault();
+                const valorCajaInicial = parseFloat(valorCajaInicialInput.value) || 0;
+                if (valorCajaInicial < 0) {
+                    alert("La caja inicial no puede ser un valor negativo.");
+                    return;
+                }
+                cajaInicialInput.value = valorCajaInicial.toFixed(2);
+                localStorage.setItem('caja_inicial', valorCajaInicial.toFixed(2));
+                $('#setCajaInicialModal').modal('hide');
+            });
+
+            // Evento para confirmar el cierre de caja
+            document.getElementById('cerrarCajaBtn').addEventListener('click', function () {
+                $('#confirmCerrarCajaModal').modal('show');
+            });
+
+            // Función para agregar una fila a la tabla
+            function addRowToTable(product) {
+                const newRow = document.createElement('tr');
+                const totalPrecio = product.precio * product.cantidad; // Calcular el precio total
+                newRow.innerHTML = `
+                    <td>${product.nombre}</td>
+                    <td>${totalPrecio.toFixed(2)}</td> <!-- Mostrar el precio total -->
+                    <td>${product.cantidad}</td>
+                    <td>${product.hora}</td>
+                    <td><input type="checkbox"></td>
+                `;
+                tableBody.appendChild(newRow);
+
+                // Actualizar el campo de "Producto Actual" con el nombre del último producto agregado
+                document.getElementById('nombre_producto').value = product.nombre;
+
+                // Actualizar el campo de "Precio por Unidad" con el precio del último producto agregado
+                document.getElementById('precio_unitario').value = product.precio;
+
+                // Calcular el total de la venta (cantidad * precio)
+                const totalVenta = product.cantidad * product.precio;
+
+                // Mostrar el total de la venta en el campo correspondiente
+                document.getElementById('total_venta').value = totalVenta.toFixed(2);
+            }
+
+            // Función para actualizar la tabla con los productos guardados
+            function updateTableFromStorage() {
+                tableBody.innerHTML = ''; 
+                const savedProducts = JSON.parse(localStorage.getItem('products')) || [];
+                savedProducts.forEach(product => {
+                    addRowToTable(product);
+                });
+            }   
+
+            // Al cargar la página o después de cambiar de URL
+            window.addEventListener('load', function () {
+                updateTableFromStorage();
+                calculateTotalSales();
+            });
+
+            // Eliminar productos seleccionados
+            deleteButton.addEventListener('click', function () {
+                const rows = document.querySelectorAll('#productTableBody tr');
+                const remainingProducts = [];
+
+                rows.forEach(row => {
+                    const checkbox = row.querySelector('input[type="checkbox"]');
+                    const product = {
+                        nombre: row.cells[0].innerText,
+                        precio: parseFloat(row.cells[1].innerText) / parseInt(row.cells[2].innerText),  // Calculamos el precio unitario
+                        cantidad: parseInt(row.cells[2].innerText, 10),
+                        hora: row.cells[3].innerText
+                    };
+                    // Si el checkbox está marcado, eliminar la fila, de lo contrario, agregar a los productos restantes
+                    if (checkbox && checkbox.checked) {
+                        row.remove();
+                    } else {
+                        remainingProducts.push(product);
+                    }
+                });
+
+                // Actualizar los productos guardados en localStorage
+                localStorage.setItem('products', JSON.stringify(remainingProducts));
+
+                // Recalcular las ventas del día y el efectivo en caja
+                calculateTotalSales();
+            });
+
+            // Función para calcular el total de las ventas del día
+            function calculateTotalSales() {
+                const savedProducts = JSON.parse(localStorage.getItem('products')) || [];
+                let total = 0;
+
+                // Calcular el total de ventas
+                savedProducts.forEach(product => {
+                    total += product.precio * product.cantidad;
+                });
+                // Actualizar las ventas del día
+                ventasDiaInput.value = total.toFixed(2);
+                // Calcular el efectivo en caja (sumando caja inicial + ventas del día)
+                updateEfectivoEnCaja(total);
+            }
+
+            // Función para actualizar el efectivo en caja
+            function updateEfectivoEnCaja(ventasDelDia) {
+                const cajaInicial = parseFloat(cajaInicialInput.value) || 0; 
+                const efectivoEnCaja = cajaInicial + ventasDelDia; // Sumar caja inicial + ventas del día
+                efectivoEnCajaInput.value = efectivoEnCaja.toFixed(2);
+            }
+
+            // Llamar a la función para actualizar la tabla al cargar la página
+            updateTableFromStorage();
+            calculateTotalSales();
+
+            // Función para obtener el producto desde el servidor
+            function fetchProduct() {
+                const codigo = document.getElementById('codigo').value;
+                const cantidad = document.getElementById('cantidad').value;
+
+                if (!codigo) {
+                    return;  // Detener la ejecución si falta el código
+                }
+
+                // Hacer la solicitud AJAX para obtener el producto
+                fetch(`/obtener_producto/?codigo=${codigo}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.error) {
+                            alert(data.error);
+                        } else {
+                            // Crear el objeto producto
+                            const product = {
+                                nombre: data.nombre,
+                                precio: parseFloat(data.precio),
+                                cantidad: parseInt(cantidad, 10),
+                                codigo: data.codigo,
+                                hora: new Date().toLocaleTimeString()
+                            };
+
+                            // Agregar el producto a la tabla
+                            addRowToTable(product);
+
+                            // Guardar el producto en localStorage
+                            savedProducts.push(product);
+                            localStorage.setItem('products', JSON.stringify(savedProducts));
+
+                            // Actualizar el total de ventas
+                            calculateTotalSales();
+
+                            // Limpiar el campo de entrada del código
+                            document.getElementById('codigo').value = '';
+
+                            // Restablecer el campo de cantidad a 1
+                            document.getElementById('cantidad').value = 1;
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error al obtener el producto:', error);
+                        alert('Hubo un error al obtener el producto.');
+                    });
+            }
+
+            // Manejar el clic en el botón "Agregar"
+            addProductBtn.addEventListener('click', fetchProduct);
+
+            // Manejar el evento 'Enter' al presionar la tecla en el campo código
+            codigoInput.addEventListener('keydown', function(event) {
+                if (event.key === 'Enter') {
+                    event.preventDefault(); // Evitar el comportamiento por defecto (enviar formulario, si aplica)
+                    fetchProduct(); // Llamar a la función para obtener el producto
+                }
+            });
+
+            // Cerrar Caja
+            document.getElementById('cerrarCajaBtn').addEventListener('click', function() {
+                $('#confirmCerrarCajaModal').modal('show');
+            });
+
+            // Confirmar el cierre de caja
+            document.getElementById('confirmCerrarCajaBtn').addEventListener('click', function() {
+                const cajaInicial = parseFloat(document.getElementById('caja_inicial').value) || 0;
+                console.log("Caja inicial antes de enviar:", cajaInicial);
+                fetch("{% url 'cerrar_caja' %}", {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                    },
+                    body: JSON.stringify({
+                        caja_inicial: cajaInicial,
+                        productos_vendidos: JSON.parse(localStorage.getItem('products')) || []
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'ok') {
+                        console.log("Caja inicial cerrada correctamente:", data.caja_inicial);
+                    } else {
+                        console.error("Error al cerrar la caja:", data.message);
+                    }
+                    tableBody.innerHTML = '';
+                    localStorage.removeItem('products');
+                    $('#confirmCerrarCajaModal').modal('hide');
+                    location.reload();
+                })
+                .catch(error => {
+                    console.error("Error en la solicitud AJAX:", error);
+                    $('#confirmCerrarCajaModal').modal('hide');
+                });
+            });
+
+            // Cerrar el modal cuando se hace clic en "No"
+            document.getElementById('cancelarCerrarCajaBtn').addEventListener('click', function() {
+                $('#confirmCerrarCajaModal').modal('hide');
+            });
+
+            // Función para actualizar la tabla de productos (dependiendo de tu implementación)
+            function actualizarTablaProductos() {
+                location.reload();  // Recargar la página para actualizar la tabla vacía
+            }
+        });
+
+    </script>
+
+    </body>
+    </html>
+
+    {% endblock %}

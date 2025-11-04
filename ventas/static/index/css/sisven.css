@@ -1,0 +1,129 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 20px;
+}
+.container {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 20px;
+}
+.left-section {
+    width: 60%; /* 2/3 del ancho */
+    padding: 10px;
+    border: 1px solid #000;
+    border-radius: 5px;
+    background-color: #f9f9f9;
+    margin-right: 10px; /* Margen entre los dos contenedores */
+}
+.right-section {
+    width: 40%; /* 1/3 del ancho */
+    padding: 10px;
+    border: 1px solid #000;
+    border-radius: 5px;
+    background-color: #e9e9e9;
+}
+.input-group {
+    margin: 10px 0;
+    display: flex;
+    align-items: center;
+}
+.input-group label {
+    width: 100px; /* Ancho fijo para las etiquetas */
+    margin-right: 10px;
+    text-align: right;
+}
+.input-group input {
+    padding: 5px;
+    width: calc(100% - 110px); /* Ajustamos el tamaño para mantener el espaciado correcto */
+    box-sizing: border-box;
+}
+.inline-group {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.inline-group .input-group {
+    width: 48%; /* Para que ocupen el mismo espacio */
+}
+
+.product-container {
+    max-height: 1000px;
+    overflow-y: auto;
+    border: 1px solid #ddd;
+    margin-top: 10px;
+    padding: 10px;
+    background-color: #f4f4f4;
+}
+
+.table {
+    width: 100%; /* Aseguramos que ocupe el 100% del contenedor */
+    margin-top: 10px;
+    border-collapse: collapse; /* Evita espacios entre celdas */
+}
+
+.table td, .table th {
+    padding: 5px; /* Reducimos el padding de las celdas */
+    border: 1px solid #ddd;
+    text-align: center;
+    font-size: 14px; /* Reducimos el tamaño de la fuente */
+}
+
+.table th {
+    background-color: #ddd;
+}
+
+.table input {
+    width: 90%; /* Hacemos que los inputs sean más pequeños dentro de las celdas */
+    padding: 5px;
+    font-size: 14px; /* Reducimos el tamaño de los inputs */
+    margin: 0 auto; /* Centra los inputs */
+    box-sizing: border-box;
+}
+
+
+.button {
+    padding: 10px 20px;
+    background-color: #333;
+    color: white;
+    border: none;
+    cursor: pointer;
+    margin-top: 20px;
+    display: block;
+}
+.button:hover {
+    background-color: #555;
+}
+/* Estilo para el botón rojo de eliminar */
+.button-red {
+    background-color: #ff4d4d;
+    color: white;
+    padding: 5px 10px;
+    border: none;
+    cursor: pointer;
+    font-size: 16px;
+}
+.button-red:hover {
+    background-color: #cc0000;
+}
+
+/* Estilo para el botón "Regresar" con redondeo sutil */
+.button-red-left {
+    background-color: #ff4d4d;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    cursor: pointer;
+    margin-top: 20px;
+    display: block;
+    border-radius: 10px; /* Sutil redondeo */
+}
+
+.button-red-left:hover {
+    background-color: #cc0000;
+}
+
+/* Ajuste para los recuadros de detalles de caja */
+.right-section .input-group input {
+    width: 70%; /* Hacemos los recuadros más pequeños */
+}
